@@ -7,3 +7,12 @@ name: OtherGrowth
 startup: postworld
 url: http://www.website.here/
 version: '0.1'
+commands:
+    og:
+        description: Administrate the OtherGrowth plugin
+        aliases: [ogr]
+        usage: |
+            OtherGrowth 
+
+            (/ogr) /og reload - reload config
+
