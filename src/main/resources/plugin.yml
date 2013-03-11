@@ -1,0 +1,9 @@
+author: Zarius
+database: false
+description: Description goes here.
+generator: http://dinnerbone.com/minecraft/tools/pluginator/
+main: com.gmail.zariust.mcplugins.othergrowth.OtherGrowth
+name: OtherGrowth
+startup: postworld
+url: http://www.website.here/
+version: '0.1'
