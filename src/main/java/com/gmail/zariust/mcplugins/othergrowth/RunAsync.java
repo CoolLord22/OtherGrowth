@@ -9,8 +9,10 @@ import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
-import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Biome;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 
 public class RunAsync implements Runnable {
@@ -40,11 +42,17 @@ public class RunAsync implements Runnable {
 		Bukkit.getServer().broadcastMessage("Working!");		
 	}
 
-	private boolean rolldice(Double chance) {
-		// TODO Auto-generated method stub
-		return false;
-	}
 */
+	private boolean rolldice(Double chance) {
+		Double rolledValue = OtherGrowth.rng.nextDouble();
+		boolean chancePassed = rolledValue <= chance / 100.0; 
+		if (!chancePassed) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
 	private void aSyncProcessScanBlocks() {
 		Log.high("Starting async scan...");
 		gatherChunks();
@@ -58,8 +66,23 @@ public class RunAsync implements Runnable {
 					for (int z = 0; z < 16; z++) {
 						for (int y = 0; y < world.getMaxHeight(); y++) {
 							count++;
-							if (chunk.getBlockTypeId(x, y, z) == Material.GLASS.getId()) {
-								Log.highest("Found GLASS!!! at "+chunk.getX()+", "+chunk.getZ());
+							if (OtherGrowthConfig.globalMaterialToReplace != null && OtherGrowthConfig.globalMaterialToReplaceWith != null) {
+								if (chunk.getBlockTypeId(x, y, z) == OtherGrowthConfig.globalMaterialToReplace.getId()) {
+									Log.highest("Found "+OtherGrowthConfig.globalMaterialToReplace.toString()+"!!! at "+chunk.getX()+", "+chunk.getZ());
+
+									// FIXME: experimental code only for sync thread:
+									if (rolldice(OtherGrowthConfig.globalChanceToReplace)) {
+										Block block = world.getChunkAt(chunk.getX(), chunk.getZ()).getBlock(x, y, z);
+										block.setType(OtherGrowthConfig.globalMaterialToReplaceWith);
+										Biome biome = block.getBiome();
+										String faces = "";
+										for (BlockFace face : BlockFace.values()) {
+											faces += block.getRelative(face).getType().toString();
+										}
+
+									}
+
+								}
 							}
 						}
 						//	Block block = world.getBlock(x,y,z);

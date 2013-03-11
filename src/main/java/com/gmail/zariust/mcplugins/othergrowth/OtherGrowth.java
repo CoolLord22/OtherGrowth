@@ -53,7 +53,8 @@ public class OtherGrowth extends JavaPlugin implements Listener {
 	public static void enableOtherGrowth() {
 		// async - runs every x ticks, gathers chunks to check and compares blocks against recipies			
 		RunAsync aSyncRunner = new RunAsync(OtherGrowth.plugin);
-		aSyncTaskId = server.getScheduler().scheduleAsyncRepeatingTask(OtherGrowth.plugin, aSyncRunner, OtherGrowthConfig.taskDelay, OtherGrowthConfig.taskDelay);                     
+//		aSyncTaskId = server.getScheduler().scheduleAsyncRepeatingTask(OtherGrowth.plugin, aSyncRunner, OtherGrowthConfig.taskDelay, OtherGrowthConfig.taskDelay);                     
+		aSyncTaskId = server.getScheduler().scheduleSyncRepeatingTask(OtherGrowth.plugin, aSyncRunner, OtherGrowthConfig.taskDelay, OtherGrowthConfig.taskDelay);                     
 
 		// sync - runs every x ticks and actually makes the changes?
 		//	        RunSync syncRunner = new RunSync();

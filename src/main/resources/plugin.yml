@@ -6,7 +6,7 @@ main: com.gmail.zariust.mcplugins.othergrowth.OtherGrowth
 name: OtherGrowth
 startup: postworld
 url: http://www.website.here/
-version: '0.1'
+version: '0.2'
 commands:
     og:
         description: Administrate the OtherGrowth plugin

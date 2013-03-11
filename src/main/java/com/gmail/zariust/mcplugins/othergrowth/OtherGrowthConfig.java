@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -24,8 +25,11 @@ public class OtherGrowthConfig {
 
 	// Track loaded files so we don't get into an infinite loop
 	Set<String> loadedDropFiles = new HashSet<String>();
+	static Material globalMaterialToReplace;
+	static Material globalMaterialToReplaceWith;
 //	private String boundariesFile;
 	public static int globalChunkScanRadius = 6;
+	public static Double globalChanceToReplace = 0.5;
 
 	public OtherGrowthConfig(OtherGrowth instance) {
 		parent = instance;
@@ -75,8 +79,18 @@ public class OtherGrowthConfig {
 
 		//safeInsideBoundary = globalConfig.getBoolean("safeinsideboundary", true);
 		taskDelay = globalConfig.getInt("tick_delay_between_scans", 200);
+		globalChanceToReplace = globalConfig.getDouble("chance_to_replace", 0.5);
 		globalDisableMetrics = globalConfig.getBoolean("disable_metrics", false);
 		globalChunkScanRadius = globalConfig.getInt("chunk_scan_radius", 6);
+		String stringGlobalMaterialToReplace = globalConfig.getString("material_to_replace", "GLASS");
+		String stringGlobalMaterialToReplaceWith = globalConfig.getString("material_to_replace_with", "GLOWSTONE");
+
+		globalMaterialToReplace = Material.matchMaterial(stringGlobalMaterialToReplace);
+		globalMaterialToReplaceWith = Material.matchMaterial(stringGlobalMaterialToReplaceWith);
+		
+		if (globalMaterialToReplace == null || globalMaterialToReplaceWith == null) {
+			Log.warning("Error: material to replace or replacewith is null, not changing anything.");
+		}
 		if (taskDelay < 5) taskDelay = 5; // a minimum for safety
 		Log.high("Loaded global config ("+global+"), keys found: "+globalConfig.getKeys(false).toString() + " (verbosity="+verbosity+")");
 
@@ -93,6 +107,9 @@ public class OtherGrowthConfig {
 			stream.println("verbosity: normal");
 			stream.println("tick_delay_between_scans: 200");
 			stream.println("chunk_scan_radius: 6");
+			stream.println("material_to_replace: (eg. grass or glass)");
+			stream.println("material_to_replace_with: (eg. leaves or glowstone)");
+			stream.println("chance_to_replace: 0.5");			
 			stream.println("");
 			stream.close();
 			//globalConfig.save(global);
