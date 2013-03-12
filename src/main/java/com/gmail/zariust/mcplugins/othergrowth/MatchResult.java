@@ -6,10 +6,12 @@ import org.bukkit.Location;
 public class MatchResult {
 	private ChunkSnapshot chunkSnapshot = null;
 	private Location location = null;
+	private Recipe recipe = null;
 	
-	public MatchResult(ChunkSnapshot chunk, Object recipe, Location location) {
+	public MatchResult(ChunkSnapshot chunk, Recipe recipe, Location location) {
 		this.setChunkSnapshot(chunk);
 		this.location = location;
+		this.setRecipe(recipe);
 	}
 
 	public ChunkSnapshot getChunkSnapshot() {
@@ -26,5 +28,13 @@ public class MatchResult {
 
 	public void setLocation(Location location) {
 		this.location = location;
+	}
+
+	public Recipe getRecipe() {
+		return recipe;
+	}
+
+	public void setRecipe(Recipe recipe) {
+		this.recipe = recipe;
 	}
 }

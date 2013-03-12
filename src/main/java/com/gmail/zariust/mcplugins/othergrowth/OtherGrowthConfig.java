@@ -6,11 +6,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import org.bukkit.Material;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -25,14 +28,11 @@ public class OtherGrowthConfig {
 
 	// Track loaded files so we don't get into an infinite loop
 	Set<String> loadedDropFiles = new HashSet<String>();
-	static Material globalMaterialToReplace;
-	static Material globalMaterialToReplaceWith;
-//	private String boundariesFile;
+	private String configsFile;
 	public static int globalChunkScanRadius = 6;
 	public static Double globalChanceToReplace = 0.5;
 	public static boolean globalScanAsync = true;
 	public static boolean globalScanLoadedChunks = true;
-	public static Material globalMaterialNeeded;
 	public static boolean globalRunOnStartup = true;
 	
 	public OtherGrowthConfig(OtherGrowth instance) {
@@ -44,7 +44,7 @@ public class OtherGrowthConfig {
 	public void loadFromStartup() {
         loadConfig();
 		Dependencies.init();
-		//loadIncludeFile(boundariesFile);
+		loadIncludeFile(configsFile);
 		if (globalRunOnStartup) {
 			OtherGrowth.disableOtherGrowth();
 			OtherGrowth.enableOtherGrowth();
@@ -55,7 +55,7 @@ public class OtherGrowthConfig {
 	public void load() {
         loadConfig();
 		Dependencies.init();
-		//loadIncludeFile(boundariesFile);
+		loadIncludeFile(configsFile);
 
         OtherGrowth.disableOtherGrowth();
         OtherGrowth.enableOtherGrowth();
@@ -90,9 +90,9 @@ public class OtherGrowthConfig {
 		}
 
 		verbosity = CommonPlugin.getConfigVerbosity(globalConfig);
-		//boundariesFile = globalConfig.getString("rootconfig", "OtherGrowth-config.yml");
+		configsFile = globalConfig.getString("rootconfig", "recipes.yml");
 
-		//safeInsideBoundary = globalConfig.getBoolean("safeinsideboundary", true);
+		//safeInsiderecipe = globalConfig.getBoolean("safeinsiderecipe", true);
 		taskDelay = globalConfig.getInt("tick_delay_between_scans", 200);
 		globalChanceToReplace = globalConfig.getDouble("chance_to_replace", 0.5);
 		globalDisableMetrics = globalConfig.getBoolean("disable_metrics", false);
@@ -100,17 +100,7 @@ public class OtherGrowthConfig {
 		globalScanAsync = globalConfig.getBoolean("scan_asynchronously", true);
 		globalScanLoadedChunks = globalConfig.getBoolean("scan_all_loaded_chunks", true);
 		globalChunkScanRadius = globalConfig.getInt("chunk_scan_radius", 6);
-		String stringGlobalMaterialToReplace = globalConfig.getString("material_to_replace", "");
-		String stringGlobalMaterialToReplaceWith = globalConfig.getString("material_to_replace_with", "");
-		String stringGlobalMaterialNeeded = globalConfig.getString("material_needed", "");
-
-		globalMaterialToReplace = Material.matchMaterial(stringGlobalMaterialToReplace);
-		globalMaterialToReplaceWith = Material.matchMaterial(stringGlobalMaterialToReplaceWith);
-		globalMaterialNeeded = Material.matchMaterial(stringGlobalMaterialNeeded);
 		
-		if (globalMaterialToReplace == null || globalMaterialToReplaceWith == null) {
-			Log.warning("Error: material to replace or replacewith is null, not changing anything.");
-		}
 		if (taskDelay < 5) taskDelay = 5; // a minimum for safety
 		Log.high("Loaded global config ("+global+"), keys found: "+globalConfig.getKeys(false).toString() + " (verbosity="+verbosity+")");
 
@@ -160,7 +150,16 @@ public class OtherGrowthConfig {
 			try {
 				yml.createNewFile();
 				Log.normal("Created an empty file " + parent.getDataFolder() +"/"+filename+", please edit it!");
-				config.set("boundaries", null);
+				config.set("recipes", null);
+				Map<String,Object> map = new HashMap<String, Object>();
+				map.put("target", "COBBLESTONE");
+				map.put("replacement", "MOSSY_COBBLESTONE");
+				map.put("needed", "STATIONARY_WATER");
+				map.put("world", "WORLD");
+				map.put("chance", 0.5);
+				List<Object> list = new ArrayList<Object>();
+				list.add(map);
+				config.set("recipes.cobbletomossy", list);
 				config.set("include-files", null);
 				config.set("defaults", null);
 				config.set("aliases", null);
@@ -185,55 +184,72 @@ public class OtherGrowthConfig {
 			e.printStackTrace();
 		}
 
-//		// Load the drops
-//		ConfigurationSection node = config.getConfigurationSection("boundaries");
-//		Set<String> blocks = null;
-//
-//		if (node != null) {
-//			blocks = node.getKeys(false);
-//			for(String name : blocks) {
-//				String boundaryName = name;
-//				//loadBoundary(node.getConfigurationSection(name), boundaryName);
-//			}
-//		}
-//
-//		// Load the include files
-//		List<String> includeFiles = config.getStringList("include-files");
-//		for(String include : includeFiles) loadIncludeFile(include);
+		// Load the drops
+		ConfigurationSection node = config.getConfigurationSection("recipes");
+		Set<String> blocks = null;
+
+		if (node != null) {
+			blocks = node.getKeys(false);
+			for(String name : blocks) {
+				loadrecipe(node.getConfigurationSection(name), name);
+			}
+		}
+
+		// Load the include files
+		List<String> includeFiles = config.getStringList("include-files");
+		for(String include : includeFiles) loadIncludeFile(include);
 	}
 
-//
-//	private void loadBoundary(ConfigurationSection node, String name) {
-//		if (node == null) OtherGrowth.logInfo("No options found for boundary ("+name+")", HIGH);
-//		//		for(String childName : node.getKeys(name)) {
-//		//		ConfigurationNode subNode = node.getNode(name+"/"+childName);
-//		//Main.logInfo("Parsing boundary ("+name+")", Verbosity.HIGH);
-//		//boolean isGroup = dropNode.getKeys().contains("dropgroup");
-//		Boundary boundary = Boundary.parseFrom(name, node);
-//
-//		// loop through worlds and if positive add the boundary to that world
-//		if (boundary == null) {
-//			OtherGrowth.logWarning("Boundary failed [null] ("+name+")", NORMAL);
-//			return;
-//		} else if(boundary.worlds == null) {
-//			OtherGrowth.logWarning("No worlds found for boundary ("+name+")", NORMAL);
-//			return;
-//		}
-//
-//		for (World world : Bukkit.getServer().getWorlds()) {
-//			Boolean activeWorld = boundary.worlds.get(world.getName()); 
-//			if (activeWorld == null) {
-//				//Main.logWarning("Error: world ("+world.getName()+") is null in boundary.");
-//				activeWorld = false;
-//			}
-//			Log.high("Boundary worlds: "+activeWorld);
-//			if (activeWorld || boundary.worlds.get(null)) {
-//				OtherGrowth.boundaryList.add(world, boundary); 
-//				OtherGrowth.logInfo("Adding boundary to world ("+world.getName()+").", HIGH);
-//			}
-//		}
-//		//		}
-//	}
+
+	private void loadrecipe(ConfigurationSection node, String name) {
+		if (node == null) Log.high("No options found for recipe ("+name+")");
+		//		for(String childName : node.getKeys(name)) {
+		//		ConfigurationNode subNode = node.getNode(name+"/"+childName);
+		//Main.logInfo("Parsing recipe ("+name+")", Verbosity.HIGH);
+		//boolean isGroup = dropNode.getKeys().contains("dropgroup");
+		Recipe recipe = Recipe.parseFrom(name, node);
+
+		// loop through worlds and if positive add the recipe to that world
+		if (recipe == null) {
+			Log.warning("recipe failed [null] ("+name+")");
+			return;
+		} 
+		
+		if(recipe.worlds == null) {
+			Log.high("No worlds found for recipe ("+name+"), adding to all.");
+			for (World world : Bukkit.getServer().getWorlds()) {
+				if (OtherGrowth.recipes.get(world) != null) {
+					OtherGrowth.recipes.get(world).add(recipe);
+				} else {
+					Set<Recipe> recipes = new HashSet<Recipe>();
+					recipes.add(recipe);
+					OtherGrowth.recipes.put(world.getName(), recipes);
+				}	
+				Log.high("Adding recipes to world ("+world.getName()+").");
+
+			}
+		} else {
+
+			for (World world : Bukkit.getServer().getWorlds()) {
+				Boolean activeWorld = recipe.worlds.get(world.getName()); 
+				if (activeWorld == null) {
+					//Main.logWarning("Error: world ("+world.getName()+") is null in recipe.");
+					activeWorld = false;
+				}
+				//Log.high("recipe worlds: "+activeWorld);
+				if (activeWorld || recipe.worlds.get(null)) {
+					if (OtherGrowth.recipes.get(world) != null) {
+						OtherGrowth.recipes.get(world).add(recipe);
+					} else {
+						Set<Recipe> recipes = new HashSet<Recipe>();
+						recipes.add(recipe);
+						OtherGrowth.recipes.put(world.getName(), recipes);
+					}
+					Log.high("Adding recipes to world ("+world.getName()+").");
+				}
+			}
+		}
+	}
 
 	public static List<String> getMaybeList(ConfigurationSection node, String key) {
 		if(node == null) return new ArrayList<String>();
@@ -244,42 +260,42 @@ public class OtherGrowthConfig {
 		else list = Collections.singletonList(prop.toString());
 		return list;
 	}
-//
-//	public static Map<String, Boolean> parseWorldsFrom(ConfigurationSection node, Map<String, Boolean> def) {
-//		OtherGrowth.logInfo(node.toString(),HIGHEST);
-//		List<String> worlds = getMaybeList(node, "world");
-//		List<String> worldsExcept = getMaybeList(node, "worldexcept");
-//
-//		if(worlds.isEmpty() && worldsExcept.isEmpty()) return def;
-//		Map<String, Boolean> result = new HashMap<String,Boolean>();
-//		result.put(null, false); 
-//		for(String name : worlds) {
-//			if(name.equalsIgnoreCase("ALL") || name.equalsIgnoreCase("ANY")) {
-//				result.put(null, true);
-//				continue;
-//			}
-//			World world = Bukkit.getServer().getWorld(name);
-//			if(world == null && name.startsWith("-")) {
-//				world = Bukkit.getServer().getWorld(name.substring(1));
-//				if(world == null) {
-//					OtherGrowth.logWarning("Invalid world " + name + "; skipping...");
-//					continue;
-//				}
-//				result.put(world.getName(), false);
-//			} else if (world != null) result.put(world.getName(), true);
-//			// wildcard
-//		}
-//		for(String name : worldsExcept) {
-//			World world = Bukkit.getServer().getWorld(name);
-//			if(world == null) {
-//				OtherGrowth.logWarning("Invalid world exception " + name + "; skipping...");
-//				continue;
-//			}
-//			result.put(world.getName(), false);
-//		}
-//		if(result.isEmpty()) return null;
-//		return result;
-//	}
+
+	public static Map<String, Boolean> parseWorldsFrom(ConfigurationSection node, Map<String, Boolean> def) {
+		Log.highest(node.toString());
+		List<String> worlds = getMaybeList(node, "world");
+		List<String> worldsExcept = getMaybeList(node, "worldexcept");
+
+		if(worlds.isEmpty() && worldsExcept.isEmpty()) return def;
+		Map<String, Boolean> result = new HashMap<String,Boolean>();
+		result.put(null, false); 
+		for(String name : worlds) {
+			if(name.equalsIgnoreCase("ALL") || name.equalsIgnoreCase("ANY")) {
+				result.put(null, true);
+				continue;
+			}
+			World world = Bukkit.getServer().getWorld(name);
+			if(world == null && name.startsWith("-")) {
+				world = Bukkit.getServer().getWorld(name.substring(1));
+				if(world == null) {
+					Log.warning("Invalid world " + name + "; skipping...");
+					continue;
+				}
+				result.put(world.getName(), false);
+			} else if (world != null) result.put(world.getName(), true);
+			// wildcard
+		}
+		for(String name : worldsExcept) {
+			World world = Bukkit.getServer().getWorld(name);
+			if(world == null) {
+				Log.warning("Invalid world exception " + name + "; skipping...");
+				continue;
+			}
+			result.put(world.getName(), false);
+		}
+		if(result.isEmpty()) return null;
+		return result;
+	}
 
 
 	public static Verbosity getVerbosity() {

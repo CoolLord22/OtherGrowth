@@ -1,9 +1,9 @@
 package com.gmail.zariust.mcplugins.othergrowth;
 
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
@@ -14,7 +14,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 public class RunAsync implements Runnable {
-	final Map<String, Set<ChunkSnapshot>> gatheredChunks = new HashMap<String, Set<ChunkSnapshot>>();
+	final Queue<ChunkSnapshot> gatheredChunks = new LinkedList<ChunkSnapshot>();
 
 	private final OtherGrowth plugin;
 	public RunAsync(OtherGrowth plugin) {
@@ -42,46 +42,39 @@ public class RunAsync implements Runnable {
 		} else {
 			gatherChunks();
 		}
-		for (String world : gatheredChunks.keySet()) {
-			//			recipeSet = allRecipies.get(world, time, weather);
-			if (gatheredChunks.get(world) == null) {
-				
-				return;
-			}
-			
-			long count = 0;
-			for (ChunkSnapshot chunk : gatheredChunks.get(world)) {
-				if (chunk == null) {
-					Log.warning("Gathered chunk is null??");
-					continue;
-				}
 
-				for (int x = 0; x < 16; x++) {
-					for (int z = 0; z < 16; z++) {
-						for (int y = 0; y < Bukkit.getServer().getWorld(world).getMaxHeight(); y++) {
-							count++;
-							if (OtherGrowthConfig.globalMaterialToReplace != null && OtherGrowthConfig.globalMaterialToReplaceWith != null) {
-								if (chunk.getBlockTypeId(x, y, z) == OtherGrowthConfig.globalMaterialToReplace.getId()) {
-									Log.highest("Found "+OtherGrowthConfig.globalMaterialToReplace.toString()+"!!! at "+chunk.getX()+", "+chunk.getZ());
-									// FIXME: experimental code only for sync thread:
-									if (rolldice(OtherGrowthConfig.globalChanceToReplace)) {
-										// check biome
-										//Biome biome = chunk.getBiome(x, z); // FIXME: gives regular npe's?
+		long count = 0;
+		ChunkSnapshot chunk = gatheredChunks.poll();
+		while (chunk != null) {
+			for (int x = 0; x < 16; x++) {
+				for (int z = 0; z < 16; z++) {
+					for (int y = 0; y < Bukkit.getServer().getWorld(chunk.getWorldName()).getMaxHeight(); y++) {
+						count++;
+						int currentMaterial = chunk.getBlockTypeId(x,  y,  z);
 
-										synchronized (plugin) {
-											Object recipe = null;
+						Set<Recipe> recipes = OtherGrowth.recipes.get(chunk.getWorldName());
+						if (recipes != null) {
+							for (Recipe recipe : recipes) {
+								if (recipe.target != null && recipe.replacementMat != null) {
+									if (currentMaterial == recipe.target.getId()) {
+										Log.highest("Found "+recipe.target.toString()+"!!! at "+chunk.getX()+", "+chunk.getZ());
+
+										if (rolldice(recipe.chance)) {
+											// check biome
+											//Biome biome = chunk.getBiome(x, z); // FIXME: gives regular npe's?
+
 											OtherGrowth.results.add(new MatchResult(chunk, recipe, new Location(null, x, y, z) ));
 										}
 									}
-
 								}
 							}
 						}
 					}
 				}
 			}
-			Log.high("Scan complete ("+count+" blocks)");
+			chunk = gatheredChunks.poll();
 		}
+		Log.high("Scan complete ("+count+" blocks)");
 	}
 
 	private void gatherLoadedChunks() {
@@ -93,10 +86,9 @@ public class RunAsync implements Runnable {
 					Log.high("World: "+world.toString());
 					Set<ChunkSnapshot> chunkSnaps = new HashSet<ChunkSnapshot>();
 					for (Chunk chunk : world.getLoadedChunks()) {
-						chunkSnaps.add(chunk.getChunkSnapshot());
+						gatheredChunks.add(chunk.getChunkSnapshot());
 					}
-					Log.high("Chunks: "+chunkSnaps.size()+" loaded: "+world.getLoadedChunks().length);
-					gatheredChunks.put(world.getName(), chunkSnaps);
+					Log.high("Chunks gathered: "+chunkSnaps.size()+", World: "+world.toString()+": "+world.getLoadedChunks().length);
 				}
 			}
 		}
@@ -107,7 +99,6 @@ public class RunAsync implements Runnable {
 		
 		synchronized (plugin) {
 			
-			Set<ChunkSnapshot> chunks = new HashSet<ChunkSnapshot>();
 			Set<Chunk> chunksSeen = new HashSet<Chunk>();
 			for (Player player : Bukkit.getServer().getOnlinePlayers()) {
 
@@ -128,8 +119,7 @@ public class RunAsync implements Runnable {
 								ChunkSnapshot currentChunkSnapShot = chunk.getChunkSnapshot();
 								Log.highest("Saving chunk "+currentChunkSnapShot.getX()+", "+currentChunkSnapShot.getZ());
 
-								chunks.add(currentChunkSnapShot);
-								gatheredChunks.put(player.getWorld().getName(), chunks);
+								gatheredChunks.add(currentChunkSnapShot);
 							}
 						}
 					}

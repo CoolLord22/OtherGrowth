@@ -52,22 +52,26 @@ public class RunSync implements Runnable {
 			
 			Block block = world.getChunkAt(chunkSnapshot.getX(), chunkSnapshot.getZ()).getBlock(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
 
+			Recipe recipe = result.getRecipe();
+			
 			Log.highest("Got a result: "+block.getType().toString());
 			// check faces
-			String faces = "";
 			boolean neededMatch = false;
-			if (OtherGrowthConfig.globalMaterialNeeded != null) {
-				Log.highest("Searching for needed: "+OtherGrowthConfig.globalMaterialNeeded);
+			
+			// FIXME: don't really want to do this once per recipe - rearrange so 
+			// we can do this outside the recipe and save the number/type of blocks in a map or something
+			if (recipe.needed != null) {
+				Log.highest("Searching for needed: "+recipe.needed);
 				for (BlockFace face : BlockFace.values()) {
-					if (block.getRelative(face).getType() == OtherGrowthConfig.globalMaterialNeeded) neededMatch = true;
+					if (block.getRelative(face).getType() == recipe.needed) neededMatch = true;
 				} 
 			} else {
 				neededMatch = true; // null material needed
 			}
 
 			if (neededMatch) {
-				Log.highest("Replacing with: "+OtherGrowthConfig.globalMaterialToReplaceWith);
-				block.setType(OtherGrowthConfig.globalMaterialToReplaceWith);
+				Log.highest("Replacing with: "+recipe.replacementMat);
+				block.setType(recipe.replacementMat);
 			}
 			//	Block block = world.getBlock(x,y,z);
 			//		recipe = recipeSet.get(block.getType());

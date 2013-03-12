@@ -1,8 +1,11 @@
 package com.gmail.zariust.mcplugins.othergrowth;
 
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.bukkit.Server;
@@ -14,8 +17,7 @@ import org.bukkit.scheduler.BukkitTask;
 public class OtherGrowth extends JavaPlugin implements Listener {
 	private static Server server;
 	static OtherGrowth plugin;
-	public static String pluginName;
-	public static String pluginVersion;  
+	public static String pluginName, pluginVersion;  
 	boolean pluginEnabled;
 	
 	static OtherGrowthConfig config;
@@ -26,6 +28,7 @@ public class OtherGrowth extends JavaPlugin implements Listener {
 	static BukkitTask aSyncTaskId;
 
 	static Queue<MatchResult> results = new LinkedList<MatchResult>();
+	public static Map<String, Set<Recipe>> recipes = new HashMap<String, Set<Recipe>>();
 	
 	public OtherGrowth() {
 		rng = new Random();
