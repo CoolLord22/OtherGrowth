@@ -1,16 +1,11 @@
 package com.gmail.zariust.mcplugins.othergrowth;
 
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
-import java.util.Set;
 import java.util.logging.Logger;
 
-import org.bukkit.ChunkSnapshot;
 import org.bukkit.Server;
-import org.bukkit.World;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -30,7 +25,6 @@ public class OtherGrowth extends JavaPlugin implements Listener {
 	static int syncTaskId = 0;
 	static BukkitTask aSyncTaskId;
 
-	final static Map<World, Set<ChunkSnapshot>> gatheredChunks = new HashMap<World, Set<ChunkSnapshot>>();
 	static Queue<MatchResult> results = new LinkedList<MatchResult>();
 	
 	public OtherGrowth() {
@@ -51,13 +45,17 @@ public class OtherGrowth extends JavaPlugin implements Listener {
 
 		// Load the config files
 		OtherGrowth.config = new OtherGrowthConfig(this);
-		config.load(); // load config, Dependencies & enable
+		config.loadFromStartup(); // load config, Dependencies & enable
 	};
 
 	public static void enableOtherGrowth() {
 		// async - runs every x ticks, gathers chunks to check and compares blocks against recipes			
 		RunAsync aSyncRunner = new RunAsync(OtherGrowth.plugin);
-		aSyncTaskId = server.getScheduler().runTaskTimerAsynchronously(OtherGrowth.plugin, aSyncRunner, OtherGrowthConfig.taskDelay, OtherGrowthConfig.taskDelay);                     
+		if (OtherGrowthConfig.globalScanAsync) {
+			aSyncTaskId = server.getScheduler().runTaskTimerAsynchronously(OtherGrowth.plugin, aSyncRunner, OtherGrowthConfig.taskDelay, OtherGrowthConfig.taskDelay);
+		} else {
+			aSyncTaskId = server.getScheduler().runTaskTimer(OtherGrowth.plugin, aSyncRunner, OtherGrowthConfig.taskDelay, OtherGrowthConfig.taskDelay);
+		}
 		
 		// sync - runs every x ticks and actually makes the changes?
         RunSync syncRunner = new RunSync(plugin);

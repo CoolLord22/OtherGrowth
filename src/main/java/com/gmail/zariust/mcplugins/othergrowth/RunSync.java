@@ -51,14 +51,24 @@ public class RunSync implements Runnable {
 			World world = Bukkit.getServer().getWorld(chunkSnapshot.getWorldName());
 			
 			Block block = world.getChunkAt(chunkSnapshot.getX(), chunkSnapshot.getZ()).getBlock(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-			block.setType(OtherGrowthConfig.globalMaterialToReplaceWith);
 
+			Log.highest("Got a result: "+block.getType().toString());
 			// check faces
 			String faces = "";
-			for (BlockFace face : BlockFace.values()) {
-				faces += block.getRelative(face).getType().toString();
+			boolean neededMatch = false;
+			if (OtherGrowthConfig.globalMaterialNeeded != null) {
+				Log.highest("Searching for needed: "+OtherGrowthConfig.globalMaterialNeeded);
+				for (BlockFace face : BlockFace.values()) {
+					if (block.getRelative(face).getType() == OtherGrowthConfig.globalMaterialNeeded) neededMatch = true;
+				} 
+			} else {
+				neededMatch = true; // null material needed
 			}
 
+			if (neededMatch) {
+				Log.highest("Replacing with: "+OtherGrowthConfig.globalMaterialToReplaceWith);
+				block.setType(OtherGrowthConfig.globalMaterialToReplaceWith);
+			}
 			//	Block block = world.getBlock(x,y,z);
 			//		recipe = recipeSet.get(block.getType());
 			//		if (recipe != null) {

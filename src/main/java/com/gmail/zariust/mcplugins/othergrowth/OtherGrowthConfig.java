@@ -30,13 +30,28 @@ public class OtherGrowthConfig {
 //	private String boundariesFile;
 	public static int globalChunkScanRadius = 6;
 	public static Double globalChanceToReplace = 0.5;
-
+	public static boolean globalScanAsync = true;
+	public static boolean globalScanLoadedChunks = true;
+	public static Material globalMaterialNeeded;
+	public static boolean globalRunOnStartup = true;
+	
 	public OtherGrowthConfig(OtherGrowth instance) {
 		parent = instance;
 		verbosity = Verbosity.HIGH;
 		taskDelay = 200;
 	}
 
+	public void loadFromStartup() {
+        loadConfig();
+		Dependencies.init();
+		//loadIncludeFile(boundariesFile);
+		if (globalRunOnStartup) {
+			OtherGrowth.disableOtherGrowth();
+			OtherGrowth.enableOtherGrowth();
+		}
+		
+	}
+	
 	public void load() {
         loadConfig();
 		Dependencies.init();
@@ -81,12 +96,17 @@ public class OtherGrowthConfig {
 		taskDelay = globalConfig.getInt("tick_delay_between_scans", 200);
 		globalChanceToReplace = globalConfig.getDouble("chance_to_replace", 0.5);
 		globalDisableMetrics = globalConfig.getBoolean("disable_metrics", false);
+		globalRunOnStartup = globalConfig.getBoolean("run_on_startup", true);
+		globalScanAsync = globalConfig.getBoolean("scan_asynchronously", true);
+		globalScanLoadedChunks = globalConfig.getBoolean("scan_all_loaded_chunks", true);
 		globalChunkScanRadius = globalConfig.getInt("chunk_scan_radius", 6);
-		String stringGlobalMaterialToReplace = globalConfig.getString("material_to_replace", "GLASS");
-		String stringGlobalMaterialToReplaceWith = globalConfig.getString("material_to_replace_with", "GLOWSTONE");
+		String stringGlobalMaterialToReplace = globalConfig.getString("material_to_replace", "");
+		String stringGlobalMaterialToReplaceWith = globalConfig.getString("material_to_replace_with", "");
+		String stringGlobalMaterialNeeded = globalConfig.getString("material_needed", "");
 
 		globalMaterialToReplace = Material.matchMaterial(stringGlobalMaterialToReplace);
 		globalMaterialToReplaceWith = Material.matchMaterial(stringGlobalMaterialToReplaceWith);
+		globalMaterialNeeded = Material.matchMaterial(stringGlobalMaterialNeeded);
 		
 		if (globalMaterialToReplace == null || globalMaterialToReplaceWith == null) {
 			Log.warning("Error: material to replace or replacewith is null, not changing anything.");
@@ -105,10 +125,14 @@ public class OtherGrowthConfig {
 			stream = new PrintWriter(global);
 			//Let's write our goods ;)
 			stream.println("verbosity: normal");
+			stream.println("run_on_startup: true");
 			stream.println("tick_delay_between_scans: 200");
+			stream.println("scan_asynchronously: true");
+			stream.println("scan_all_loaded_chunks: true  # ignores radius setting (if true)");
 			stream.println("chunk_scan_radius: 6");
-			stream.println("material_to_replace: (eg. grass or glass)");
-			stream.println("material_to_replace_with: (eg. leaves or glowstone)");
+			stream.println("material_to_replace: (eg. cobblestone, air or glass)");
+			stream.println("material_to_replace_with: (eg. mossycobblestone, leaves or glowstone)");
+			stream.println("material_needed: (eg. water, grass or 'no-needed-block')");
 			stream.println("chance_to_replace: 0.5");			
 			stream.println("");
 			stream.close();

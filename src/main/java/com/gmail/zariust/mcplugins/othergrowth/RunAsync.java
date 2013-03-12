@@ -14,10 +14,15 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 public class RunAsync implements Runnable {
+	final Map<String, Set<ChunkSnapshot>> gatheredChunks = new HashMap<String, Set<ChunkSnapshot>>();
 
 	private final OtherGrowth plugin;
 	public RunAsync(OtherGrowth plugin) {
 		this.plugin = plugin;
+	}
+
+	public void run() {
+		aSyncProcessScanBlocks();
 	}
 
 	private boolean rolldice(Double chance) {
@@ -32,13 +37,20 @@ public class RunAsync implements Runnable {
 
 	private void aSyncProcessScanBlocks() {
 		Log.high("Starting async scan...");
-		gatherChunks();
-		for (World world : Bukkit.getServer().getWorlds()) {
+		if (OtherGrowthConfig.globalScanLoadedChunks) {
+			gatherLoadedChunks();
+		} else {
+			gatherChunks();
+		}
+		for (String world : gatheredChunks.keySet()) {
 			//			recipeSet = allRecipies.get(world, time, weather);
-			if (OtherGrowth.gatheredChunks.get(world) == null) return;
+			if (gatheredChunks.get(world) == null) {
+				
+				return;
+			}
 			
 			long count = 0;
-			for (ChunkSnapshot chunk : OtherGrowth.gatheredChunks.get(world)) {
+			for (ChunkSnapshot chunk : gatheredChunks.get(world)) {
 				if (chunk == null) {
 					Log.warning("Gathered chunk is null??");
 					continue;
@@ -46,7 +58,7 @@ public class RunAsync implements Runnable {
 
 				for (int x = 0; x < 16; x++) {
 					for (int z = 0; z < 16; z++) {
-						for (int y = 0; y < world.getMaxHeight(); y++) {
+						for (int y = 0; y < Bukkit.getServer().getWorld(world).getMaxHeight(); y++) {
 							count++;
 							if (OtherGrowthConfig.globalMaterialToReplace != null && OtherGrowthConfig.globalMaterialToReplaceWith != null) {
 								if (chunk.getBlockTypeId(x, y, z) == OtherGrowthConfig.globalMaterialToReplace.getId()) {
@@ -72,11 +84,26 @@ public class RunAsync implements Runnable {
 		}
 	}
 
+	private void gatherLoadedChunks() {
+		gatheredChunks.clear();
 
-	final static Map<World, Set<ChunkSnapshot>> gatheredChunks = new HashMap<World, Set<ChunkSnapshot>>();
+		synchronized (plugin) {
+			for (World world : Bukkit.getServer().getWorlds()) {
+				if (world.getLoadedChunks().length > 0) {
+					Log.high("World: "+world.toString());
+					Set<ChunkSnapshot> chunkSnaps = new HashSet<ChunkSnapshot>();
+					for (Chunk chunk : world.getLoadedChunks()) {
+						chunkSnaps.add(chunk.getChunkSnapshot());
+					}
+					Log.high("Chunks: "+chunkSnaps.size()+" loaded: "+world.getLoadedChunks().length);
+					gatheredChunks.put(world.getName(), chunkSnaps);
+				}
+			}
+		}
+	}
 
 	private void gatherChunks() {
-		OtherGrowth.gatheredChunks.clear();
+		gatheredChunks.clear();
 		
 		synchronized (plugin) {
 			
@@ -88,24 +115,26 @@ public class RunAsync implements Runnable {
 
 				ChunkSnapshot playerChunk = player.getLocation().getChunk().getChunkSnapshot();
 				Log.high("Scanning chunks "+chunkRadius+" radius around "+player.getDisplayName()+" ("+playerChunk.getX()+", "+playerChunk.getZ()+")");
+				Log.high("Total loaded chunks = "+player.getWorld().getLoadedChunks().length);
+				
 				for (int x = (-1*chunkRadius); x<=(chunkRadius); x++) {
 					for (int z = (-1*chunkRadius); z<=(chunkRadius); z++) {
 						if (!chunksSeen.contains(player.getWorld().getChunkAt(playerChunk.getX()+x, playerChunk.getZ()+z))) {
+
 							chunksSeen.add(player.getWorld().getChunkAt(playerChunk.getX()+x, playerChunk.getZ()+z));
 
-							ChunkSnapshot currentChunkSnapShot = player.getWorld().getChunkAt(playerChunk.getX()+x, playerChunk.getZ()+z).getChunkSnapshot();
-							Log.highest("Saving chunk "+currentChunkSnapShot.getX()+", "+currentChunkSnapShot.getZ());
+							Chunk chunk = player.getWorld().getChunkAt(playerChunk.getX()+x, playerChunk.getZ()+z);
+							if (chunk.isLoaded()) {
+								ChunkSnapshot currentChunkSnapShot = chunk.getChunkSnapshot();
+								Log.highest("Saving chunk "+currentChunkSnapShot.getX()+", "+currentChunkSnapShot.getZ());
 
-							chunks.add(currentChunkSnapShot);
-							OtherGrowth.gatheredChunks.put(player.getWorld(), chunks);
+								chunks.add(currentChunkSnapShot);
+								gatheredChunks.put(player.getWorld().getName(), chunks);
+							}
 						}
 					}
 				}
 			}
 		}
-	}
-
-	public void run() {
-		aSyncProcessScanBlocks();
 	}
 }
