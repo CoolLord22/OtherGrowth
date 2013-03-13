@@ -24,8 +24,8 @@ public class OtherGrowth extends JavaPlugin implements Listener {
 	static Logger log;
 	protected static Random rng;    
 	
-	static int syncTaskId = 0;
-	static BukkitTask aSyncTaskId;
+	static BukkitTask changeBlocksTask;
+	static BukkitTask scanBlocksTask;
 
 	static Queue<MatchResult> results = new LinkedList<MatchResult>();
 	public static Map<String, Set<Recipe>> recipes = new HashMap<String, Set<Recipe>>();
@@ -55,29 +55,29 @@ public class OtherGrowth extends JavaPlugin implements Listener {
 		// async - runs every x ticks, gathers chunks to check and compares blocks against recipes			
 		RunAsync aSyncRunner = new RunAsync(OtherGrowth.plugin);
 		if (OtherGrowthConfig.globalScanAsync) {
-			aSyncTaskId = server.getScheduler().runTaskTimerAsynchronously(OtherGrowth.plugin, aSyncRunner, OtherGrowthConfig.taskDelay, OtherGrowthConfig.taskDelay);
+			scanBlocksTask = server.getScheduler().runTaskTimerAsynchronously(OtherGrowth.plugin, aSyncRunner, OtherGrowthConfig.taskDelay, OtherGrowthConfig.taskDelay);
 		} else {
-			aSyncTaskId = server.getScheduler().runTaskTimer(OtherGrowth.plugin, aSyncRunner, OtherGrowthConfig.taskDelay, OtherGrowthConfig.taskDelay);
+			scanBlocksTask = server.getScheduler().runTaskTimer(OtherGrowth.plugin, aSyncRunner, OtherGrowthConfig.taskDelay, OtherGrowthConfig.taskDelay);
 		}
 		
 		// sync - runs every x ticks and actually makes the changes?
         RunSync syncRunner = new RunSync(plugin);
-        syncTaskId = server.getScheduler().scheduleSyncRepeatingTask(OtherGrowth.plugin, syncRunner, OtherGrowthConfig.taskDelay+10, OtherGrowthConfig.taskDelay);                     
+        changeBlocksTask = server.getScheduler().runTaskTimer(OtherGrowth.plugin, syncRunner, OtherGrowthConfig.taskDelay+10, OtherGrowthConfig.taskDelay);                     
 
 		plugin.pluginEnabled = true;
 	}
 
 	public static void disableOtherGrowth() {
-		server.getScheduler().cancelTask(syncTaskId);
-		if (aSyncTaskId != null) aSyncTaskId.cancel();
+		if (changeBlocksTask != null) changeBlocksTask.cancel();
+		if (scanBlocksTask != null) scanBlocksTask.cancel();
 		plugin.pluginEnabled = false;
 	}
 
 	@Override
 	public void onDisable() {
 		// Stop any running scheduler tasks
-		server.getScheduler().cancelTask(syncTaskId);
-		if (aSyncTaskId != null) aSyncTaskId.cancel();
+		if (changeBlocksTask != null) changeBlocksTask.cancel();
+		if (scanBlocksTask != null) scanBlocksTask.cancel();
 
 	};
 }
