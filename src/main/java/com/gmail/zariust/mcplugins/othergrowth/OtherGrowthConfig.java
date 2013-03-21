@@ -218,8 +218,8 @@ public class OtherGrowthConfig {
 		if(recipe.worlds == null) {
 			Log.high("No worlds found for recipe ("+name+"), adding to all.");
 			for (World world : Bukkit.getServer().getWorlds()) {
-				if (OtherGrowth.recipes.get(world) != null) {
-					OtherGrowth.recipes.get(world).add(recipe);
+				if (OtherGrowth.recipes.get(world.getName()) != null) {
+					OtherGrowth.recipes.get(world.getName()).add(recipe);
 				} else {
 					Set<Recipe> recipes = new HashSet<Recipe>();
 					recipes.add(recipe);
@@ -238,8 +238,8 @@ public class OtherGrowthConfig {
 				}
 				//Log.high("recipe worlds: "+activeWorld);
 				if (activeWorld || recipe.worlds.get(null)) {
-					if (OtherGrowth.recipes.get(world) != null) {
-						OtherGrowth.recipes.get(world).add(recipe);
+					if (OtherGrowth.recipes.get(world.getName()) != null) {
+						OtherGrowth.recipes.get(world.getName()).add(recipe);
 					} else {
 						Set<Recipe> recipes = new HashSet<Recipe>();
 						recipes.add(recipe);
