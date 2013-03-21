@@ -120,10 +120,6 @@ public class OtherGrowthConfig {
 			stream.println("scan_asynchronously: true");
 			stream.println("scan_all_loaded_chunks: true  # ignores radius setting (if true)");
 			stream.println("chunk_scan_radius: 6");
-			stream.println("material_to_replace: (eg. cobblestone, air or glass)");
-			stream.println("material_to_replace_with: (eg. mossycobblestone, leaves or glowstone)");
-			stream.println("material_needed: (eg. water, grass or 'no-needed-block')");
-			stream.println("chance_to_replace: 0.5");			
 			stream.println("");
 			stream.close();
 			//globalConfig.save(global);
@@ -152,14 +148,27 @@ public class OtherGrowthConfig {
 				Log.normal("Created an empty file " + parent.getDataFolder() +"/"+filename+", please edit it!");
 				config.set("recipes", null);
 				Map<String,Object> map = new HashMap<String, Object>();
+				List<Object> list = new ArrayList<Object>();
 				map.put("target", "COBBLESTONE");
 				map.put("replacement", "MOSSY_COBBLESTONE");
 				map.put("needed", "STATIONARY_WATER");
 				map.put("world", "WORLD");
 				map.put("chance", 0.5);
-				List<Object> list = new ArrayList<Object>();
 				list.add(map);
+
 				config.set("recipes.cobbletomossy", list);
+				
+				Map<String,Object> map2 = new HashMap<String, Object>();
+				List<Object> list2 = new ArrayList<Object>();
+				map2.put("target", "AIR");
+				map2.put("replacement", "LEAVES");
+				map2.put("needed", "MOSSY_COBBLESTONE");
+				map2.put("world", "WORLD");
+				map2.put("chance", 0.5);
+				list2.add(map2);
+				config.set("recipes.leavesGrowOnMossyCobblestone", list2);
+				
+
 				config.set("include-files", null);
 				config.set("defaults", null);
 				config.set("aliases", null);
