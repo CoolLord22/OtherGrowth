@@ -28,6 +28,7 @@ public class RunAsync implements Runnable {
 	}
 
 	private void aSyncProcessScanBlocks() {
+		long startTime = System.currentTimeMillis();
 		Log.high("Starting async scan... gatheredChunks size: "+OtherGrowth.gatheredChunks.size());
 
 		long count = 0;
@@ -67,6 +68,7 @@ public class RunAsync implements Runnable {
 			}
 			chunk = OtherGrowth.gatheredChunks.poll();
 		}
-		Log.high("Scan complete ("+count+" blocks)");
+		long finishedTime = System.currentTimeMillis();
+		Log.high("Scan complete ("+count+" blocks) took "+((finishedTime - startTime)/1000)+"secs");
 	}
 }
