@@ -261,6 +261,22 @@ public class OtherGrowthConfig {
 		return list;
 	}
 
+	public static List<String> getMaybeList(ConfigurationSection node, String... keys) {
+		if(node == null) return new ArrayList<String>();
+		Object prop = null;
+		String key = null;
+		for (int i = 0; i < keys.length; i++) {
+			key = keys[i];
+			prop = node.get(key);
+			if(prop != null) break;
+		}
+		List<String> list;
+		if(prop == null) return new ArrayList<String>();
+		else if(prop instanceof List) list = node.getStringList(key);
+		else list = Collections.singletonList(prop.toString());
+		return list;
+	}
+	
 	public static Map<String, Boolean> parseWorldsFrom(ConfigurationSection node, Map<String, Boolean> def) {
 		Log.highest(node.toString());
 		List<String> worlds = getMaybeList(node, "world");

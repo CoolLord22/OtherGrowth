@@ -80,6 +80,12 @@ public class RunSync implements Runnable {
 				neededMatch = true; // null material needed
 			}
 
+			// match regions
+//			if (!isInRegion(world, block.getLocation().clone(), recipe.regions)) {
+//				neededMatch = false;
+//			}
+			
+			
 			if (neededMatch) {
 				Log.highest("Replacing with: "+recipe.replacementMat);
 				block.setType(recipe.replacementMat);
@@ -99,6 +105,19 @@ public class RunSync implements Runnable {
 		}
 		Log.high("Sync complete, replaced ("+count+" blocks)");
 	}
+//
+//	private boolean isInRegion(World world, Location location, Map<String, Boolean> regionConditions) {
+//		Set<String> regions = new HashSet<String>();
+//		
+//		Map<String, ProtectedRegion> regionMap = Dependencies.getWorldGuard().getGlobalRegionManager().get(world).getRegions();
+//		Vector vec = new Vector(location.getX(), location.getY(), location.getZ());
+//		for(String region : regionMap.keySet()) {
+//			if(regionMap.get(region).contains(vec))
+//				if (regionConditions.containsKey(region)) return true;
+//		}
+//		
+//		return regions;
+//	}    
 
 	public void run() {
 		SyncProcess();
