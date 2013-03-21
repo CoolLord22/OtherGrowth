@@ -28,10 +28,11 @@ public class RunAsync implements Runnable {
 	}
 
 	private void aSyncProcessScanBlocks() {
-		Log.high("Starting async scan...");
+		Log.high("Starting async scan... gatheredChunks size: "+OtherGrowth.gatheredChunks.size());
 
 		long count = 0;
 		ChunkSnapshot chunk = OtherGrowth.gatheredChunks.poll();
+		boolean reportedRecipes = false;
 		while (chunk != null) {
 			for (int x = 0; x < 16; x++) {
 				for (int z = 0; z < 16; z++) {
@@ -42,6 +43,11 @@ public class RunAsync implements Runnable {
 						Set<Recipe> recipes = OtherGrowth.recipes.get(chunk.getWorldName());
 						if (recipes != null) {
 							for (Recipe recipe : recipes) {
+								if (!reportedRecipes) {
+									Log.high("Testing recipe: "+recipe.name);
+									reportedRecipes = true;
+								}
+								
 								if (recipe.target != null && recipe.replacementMat != null) {
 									if (currentMaterial == recipe.target.getId()) {
 										Log.highest("Found "+recipe.target.toString()+"!!! at "+chunk.getX()+", "+chunk.getZ());
