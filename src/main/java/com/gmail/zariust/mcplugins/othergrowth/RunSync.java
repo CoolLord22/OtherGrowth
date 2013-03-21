@@ -46,7 +46,6 @@ public class RunSync implements Runnable {
 
 	private void SyncProcess() {
 		Log.high("Starting sync replacements...");
-		int count = 0;
 		
 		if (OtherGrowthConfig.globalScanLoadedChunks) {
 			gatherLoadedChunks();
@@ -55,10 +54,10 @@ public class RunSync implements Runnable {
 		}
 
 		MatchResult result = OtherGrowth.results.poll();
+		int count = 0;
 		while (result != null) {
-			count++;
 			ChunkSnapshot chunkSnapshot = result.getChunkSnapshot();
-			Location loc = result.getLocation();
+			Location loc = result.getLocation().clone();
 			World world = Bukkit.getServer().getWorld(chunkSnapshot.getWorldName());
 			
 			Block block = world.getChunkAt(chunkSnapshot.getX(), chunkSnapshot.getZ()).getBlock(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
@@ -73,10 +72,20 @@ public class RunSync implements Runnable {
 			// we can do this outside the recipe and save the number/type of blocks in a map or something
 			if (recipe.needed != null) {
 				Log.highest("Searching for needed: "+recipe.needed);
+				
+				// TODO: make my own enum with only adjacent faces in OtherGrowth class to save processing time here?
 				for (BlockFace face : BlockFace.values()) {
+					if (face == BlockFace.SELF || 
+							face == BlockFace.EAST_NORTH_EAST || face == BlockFace.EAST_SOUTH_EAST || 
+							face == BlockFace.NORTH_NORTH_EAST || face == BlockFace.NORTH_NORTH_WEST ||
+							face == BlockFace.SOUTH_SOUTH_EAST || face == BlockFace.SOUTH_SOUTH_WEST ||
+							face == BlockFace.WEST_NORTH_WEST || face == BlockFace.WEST_SOUTH_WEST) {
+						continue;
+					}
 					if (block.getRelative(face).getType() == recipe.needed) neededMatch = true;
 				} 
 			} else {
+				Log.high("Null needed material, skipping.");
 				neededMatch = true; // null material needed
 			}
 
@@ -87,8 +96,11 @@ public class RunSync implements Runnable {
 			
 			
 			if (neededMatch) {
+				count++;
 				Log.highest("Replacing with: "+recipe.replacementMat);
 				block.setType(recipe.replacementMat);
+			} else {
+				Log.highest("Match failed.");
 			}
 			//	Block block = world.getBlock(x,y,z);
 			//		recipe = recipeSet.get(block.getType());
@@ -130,11 +142,12 @@ public class RunSync implements Runnable {
 		for (World world : Bukkit.getServer().getWorlds()) {
 			if (world.getLoadedChunks().length > 0) {
 				Log.high("World: "+world.toString());
-				Set<ChunkSnapshot> chunkSnaps = new HashSet<ChunkSnapshot>();
+				int count = 0;
 				for (Chunk chunk : world.getLoadedChunks()) {
 					OtherGrowth.gatheredChunks.add(chunk.getChunkSnapshot());
+					count++;
 				}
-				Log.high("Chunks gathered: "+chunkSnaps.size()+", World: "+world.toString()+": "+world.getLoadedChunks().length);
+				Log.high("Chunks gathered: "+count+", World: "+world.toString()+": "+world.getLoadedChunks().length);
 			}
 		}
 	}
