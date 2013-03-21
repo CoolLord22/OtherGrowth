@@ -8,6 +8,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import org.bukkit.ChunkSnapshot;
 import org.bukkit.Server;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -29,6 +30,8 @@ public class OtherGrowth extends JavaPlugin implements Listener {
 
 	static Queue<MatchResult> results = new LinkedList<MatchResult>();
 	public static Map<String, Set<Recipe>> recipes = new HashMap<String, Set<Recipe>>();
+	final static Queue<ChunkSnapshot> gatheredChunks = new LinkedList<ChunkSnapshot>();
+
 	
 	public OtherGrowth() {
 		rng = new Random();

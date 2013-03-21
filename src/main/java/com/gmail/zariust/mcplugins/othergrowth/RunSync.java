@@ -1,11 +1,16 @@
 package com.gmail.zariust.mcplugins.othergrowth;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Player;
 
 
 
@@ -43,6 +48,12 @@ public class RunSync implements Runnable {
 		Log.high("Starting sync replacements...");
 		int count = 0;
 		
+		if (OtherGrowthConfig.globalScanLoadedChunks) {
+			gatherLoadedChunks();
+		} else {
+			gatherChunks();
+		}
+
 		MatchResult result = OtherGrowth.results.poll();
 		while (result != null) {
 			count++;
@@ -92,4 +103,52 @@ public class RunSync implements Runnable {
 	public void run() {
 		SyncProcess();
 	}
+	
+
+	private void gatherLoadedChunks() {
+		OtherGrowth.gatheredChunks.clear();
+
+		for (World world : Bukkit.getServer().getWorlds()) {
+			if (world.getLoadedChunks().length > 0) {
+				Log.high("World: "+world.toString());
+				Set<ChunkSnapshot> chunkSnaps = new HashSet<ChunkSnapshot>();
+				for (Chunk chunk : world.getLoadedChunks()) {
+					OtherGrowth.gatheredChunks.add(chunk.getChunkSnapshot());
+				}
+				Log.high("Chunks gathered: "+chunkSnaps.size()+", World: "+world.toString()+": "+world.getLoadedChunks().length);
+			}
+		}
+	}
+
+	private void gatherChunks() {
+		OtherGrowth.gatheredChunks.clear();
+
+		Set<Chunk> chunksSeen = new HashSet<Chunk>();
+		for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+
+			int chunkRadius = OtherGrowthConfig.globalChunkScanRadius;
+
+			ChunkSnapshot playerChunk = player.getLocation().getChunk().getChunkSnapshot();
+			Log.high("Scanning chunks "+chunkRadius+" radius around "+player.getDisplayName()+" ("+playerChunk.getX()+", "+playerChunk.getZ()+")");
+			Log.high("Total loaded chunks = "+player.getWorld().getLoadedChunks().length);
+
+			for (int x = (-1*chunkRadius); x<=(chunkRadius); x++) {
+				for (int z = (-1*chunkRadius); z<=(chunkRadius); z++) {
+					if (!chunksSeen.contains(player.getWorld().getChunkAt(playerChunk.getX()+x, playerChunk.getZ()+z))) {
+
+						chunksSeen.add(player.getWorld().getChunkAt(playerChunk.getX()+x, playerChunk.getZ()+z));
+
+						Chunk chunk = player.getWorld().getChunkAt(playerChunk.getX()+x, playerChunk.getZ()+z);
+						if (chunk.isLoaded()) {
+							ChunkSnapshot currentChunkSnapShot = chunk.getChunkSnapshot();
+							Log.highest("Saving chunk "+currentChunkSnapShot.getX()+", "+currentChunkSnapShot.getZ());
+
+							OtherGrowth.gatheredChunks.add(currentChunkSnapShot);
+						}
+					}
+				}
+			}
+		}
+	}
+
 }
