@@ -65,7 +65,7 @@ public class OtherGrowth extends JavaPlugin implements Listener {
 		
 		// sync - runs every x ticks and actually makes the changes?
         RunSync syncRunner = new RunSync(plugin);
-        changeBlocksTask = server.getScheduler().runTaskTimer(OtherGrowth.plugin, syncRunner, OtherGrowthConfig.taskDelay+10, OtherGrowthConfig.taskDelay);                     
+        changeBlocksTask = server.getScheduler().runTaskTimer(OtherGrowth.plugin, syncRunner, OtherGrowthConfig.taskDelay+(OtherGrowthConfig.taskDelay/2), OtherGrowthConfig.taskDelay);                     
 
 		plugin.pluginEnabled = true;
 	}
