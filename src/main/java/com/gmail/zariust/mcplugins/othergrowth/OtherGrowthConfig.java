@@ -148,25 +148,21 @@ public class OtherGrowthConfig {
 				Log.normal("Created an empty file " + parent.getDataFolder() +"/"+filename+", please edit it!");
 				config.set("recipes", null);
 				Map<String,Object> map = new HashMap<String, Object>();
-				List<Object> list = new ArrayList<Object>();
 				map.put("target", "COBBLESTONE");
 				map.put("replacement", "MOSSY_COBBLESTONE");
 				map.put("needed", "STATIONARY_WATER");
 				map.put("world", "WORLD");
 				map.put("chance", 0.5);
-				list.add(map);
 
-				config.set("recipes.cobbletomossy", list);
+				config.set("recipes.cobbletomossy", map);
 				
 				Map<String,Object> map2 = new HashMap<String, Object>();
-				List<Object> list2 = new ArrayList<Object>();
 				map2.put("target", "AIR");
 				map2.put("replacement", "LEAVES");
 				map2.put("needed", "MOSSY_COBBLESTONE");
 				map2.put("world", "WORLD");
 				map2.put("chance", 0.5);
-				list2.add(map2);
-				config.set("recipes.leavesGrowOnMossyCobblestone", list2);
+				config.set("recipes.leavesGrowOnMossyCobblestone", map2);
 				
 
 				config.set("include-files", null);
@@ -200,6 +196,7 @@ public class OtherGrowthConfig {
 		if (node != null) {
 			blocks = node.getKeys(false);
 			for(String name : blocks) {
+				Log.dMsg("Loading block - "+name);
 				loadrecipe(node.getConfigurationSection(name), name);
 			}
 		}
