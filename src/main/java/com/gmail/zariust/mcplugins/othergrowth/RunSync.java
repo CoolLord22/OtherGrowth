@@ -12,6 +12,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 
+import com.gmail.zariust.mcplugins.othergrowth.common.Log;
+
 
 
 public class RunSync implements Runnable {
@@ -79,8 +81,8 @@ public class RunSync implements Runnable {
 			
 			if (neededMatch) {
 				count++;
-				Log.highest("Replacing with: "+recipe.replacementMat);
-				block.setType(recipe.replacementMat);
+				Log.highest("Replacing with: "+recipe.replacementMat.toString());
+				block.setTypeIdAndData(recipe.replacementMat.id.getId(), (byte)recipe.replacementMat.data.getData(), true);
 			} else {
 				Log.highest("Match failed.");
 			}
@@ -194,7 +196,8 @@ public class RunSync implements Runnable {
 						face == BlockFace.WEST_NORTH_WEST || face == BlockFace.WEST_SOUTH_WEST) {
 					continue;
 				}
-				if (block.getRelative(face).getType() == recipe.needed) neededMatch = true;
+				if (block.getRelative(face).getType() == recipe.needed.id) neededMatch = true;
+				if (recipe.needed.data != null && block.getRelative(face).getData() != (byte)recipe.needed.data.getData()) neededMatch = false;
 			} 
 		} else {
 			Log.high("Null needed material, skipping.");

@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.	 If not, see <http://www.gnu.org/licenses/>.
 
-package com.gmail.zariust.mcplugins.othergrowth;
+package com.gmail.zariust.mcplugins.othergrowth.common;
 
 import java.io.IOException;
 
@@ -22,6 +22,8 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.permissions.Permissible;
 import org.bukkit.plugin.Plugin;
 
+import com.gmail.zariust.mcplugins.othergrowth.OtherGrowth;
+import com.gmail.zariust.mcplugins.othergrowth.OtherGrowthConfig;
 import com.gmail.zariust.metrics.Metrics;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 

@@ -23,6 +23,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
+import com.gmail.zariust.mcplugins.othergrowth.common.Dependencies;
+import com.gmail.zariust.mcplugins.othergrowth.common.Log;
+
 public class OtherGrowthCommand implements CommandExecutor {
 	private enum OBCommand {
 		RELOAD("reload", "r"),
@@ -90,7 +93,7 @@ public class OtherGrowthCommand implements CommandExecutor {
 			if(Dependencies.hasPermission(sender, "OtherGrowth.admin.profiling")) {
 				sender.sendMessage("OtherGrowth settings:");
 				sender.sendMessage((parent.pluginEnabled ? ChatColor.GREEN+"OtherGrowth enabled." : ChatColor.RED+"OtherGrowth disabled."));
-				sender.sendMessage("Verbosity: "+ChatColor.GRAY+OtherGrowthConfig.getVerbosity());				
+				sender.sendMessage("Verbosity: "+ChatColor.GRAY+Log.getVerbosity());				
 				sender.sendMessage("TickDelay: "+ChatColor.GRAY+OtherGrowthConfig.taskDelay);				
 				sender.sendMessage("ChunkScanRadius: "+ChatColor.GRAY+OtherGrowthConfig.globalChunkScanRadius);				
 			} else sender.sendMessage("You don't have permission for this command.");

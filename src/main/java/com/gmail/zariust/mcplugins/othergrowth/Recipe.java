@@ -5,15 +5,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.bukkit.Material;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.ConfigurationSection;
 
+import com.gmail.zariust.mcplugins.othergrowth.common.CommonMaterial;
+import com.gmail.zariust.mcplugins.othergrowth.common.Log;
+import com.gmail.zariust.mcplugins.othergrowth.common.OtherMat;
+import com.gmail.zariust.mcplugins.othergrowth.common.data.SimpleData;
+
 public class Recipe {
 	public String name;
-	public Material needed;
-	public Material target;
-	public Material replacementMat;
+	public OtherMat needed;
+	public OtherMat target;
+	public OtherMat replacementMat;
 	public Biome biome;
 	public Double chance;
     public Map<String, Boolean> worlds = new HashMap<String, Boolean>();
@@ -21,16 +25,23 @@ public class Recipe {
     
 	public static Recipe parseFrom(String name, ConfigurationSection node) {
 		Log.high("Parsing recipe ("+name+").");// keys:"+node.getKeys(true).toString());
-		if (node == null) return null;
+		if (node == null) {
+			Log.dMsg("Parse failed - node is null.");
+			return null;
+		}
 		Recipe recipe = new Recipe();
 		recipe.name = name;
 		recipe.regions = parseRegionsFrom(node, null);
 		//recipe.biome = node.getString("biome");
-		String needString = node.getString("needed");
-		if (needString != null) recipe.needed = Material.matchMaterial(needString);
-		String targetString = node.getString("target");
-		if (targetString != null) recipe.target = Material.matchMaterial(targetString);
-		recipe.replacementMat = Material.matchMaterial(node.getString("replacement"));
+
+		recipe.needed = getOtherMat(node.getString("needed"));
+		recipe.target = getOtherMat(node.getString("target"));
+
+		
+		recipe.replacementMat = getOtherMat(node.getString("replacement"));
+		// Replacement mat needs a data value so make 0 if not specified
+		if (recipe.replacementMat.data == null) recipe.replacementMat.data = new SimpleData(0);
+		
 		recipe.chance = node.getDouble("chance");
 		recipe.worlds = OtherGrowthConfig.parseWorldsFrom(node, null);
 		
@@ -38,10 +49,23 @@ public class Recipe {
 			Log.warning("Error: material to replace or replacewith is null, not changing anything.");
 		}
 
+		Log.high("Recipe loaded - needed: "+recipe.needed.toString()+" replacement: "+recipe.replacementMat.toString()+" target: "+recipe.target.toString());
 		return recipe;
 	}
 
-	// TODO: refactor parseWorldsFrom, Regions & Biomes as they are all very similar - (beware - fragile, breaks easy)
+	private static OtherMat getOtherMat(String matString) {
+        OtherMat omat = new OtherMat();
+        
+        String[] split = matString.split("@");
+        omat.id = CommonMaterial.matchMaterial(split[0]);
+        if (omat.id == null) return omat;
+        
+        if (split.length > 1) omat.data = SimpleData.parse(omat.id, split[1]);
+        
+        return omat;
+    }
+
+    // TODO: refactor parseWorldsFrom, Regions & Biomes as they are all very similar - (beware - fragile, breaks easy)
 	private static Map<String, Boolean> parseRegionsFrom(ConfigurationSection node, Map<String, Boolean> def) {
 		List<String> regions = OtherGrowthConfig.getMaybeList(node, "region", "regions");
 		List<String> regionsExcept = OtherGrowthConfig.getMaybeList(node, "regionexcept", "regionsexcept");

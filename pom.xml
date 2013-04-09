@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.gmail.zariust.mcplugins.othergrowth</groupId>
     <artifactId>OtherGrowth</artifactId>
-    <version>0.3.6</version>
+    <version>0.4.0</version>
     <name>OtherGrowth</name>
     <url>http://www.website.here/</url>
     <repositories>
@@ -32,7 +32,7 @@
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.4.7-R1.1-SNAPSHOT</version>
+            <version>1.5.1-R0.2-SNAPSHOT</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>

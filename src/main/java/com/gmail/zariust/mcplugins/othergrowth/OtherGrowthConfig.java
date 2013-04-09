@@ -18,9 +18,11 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import com.gmail.zariust.mcplugins.othergrowth.common.Dependencies;
+import com.gmail.zariust.mcplugins.othergrowth.common.Log;
+
 public class OtherGrowthConfig {
 
-	public static Verbosity verbosity = Verbosity.NORMAL;
 	public static long taskDelay;
 	public static boolean globalDisableMetrics;
 
@@ -37,7 +39,6 @@ public class OtherGrowthConfig {
 	
 	public OtherGrowthConfig(OtherGrowth instance) {
 		parent = instance;
-		verbosity = Verbosity.HIGH;
 		taskDelay = 200;
 	}
 
@@ -89,7 +90,6 @@ public class OtherGrowthConfig {
 			e.printStackTrace();
 		}
 
-		verbosity = CommonPlugin.getConfigVerbosity(globalConfig);
 		configsFile = globalConfig.getString("rootconfig", "recipes.yml");
 
 		//safeInsiderecipe = globalConfig.getBoolean("safeinsiderecipe", true);
@@ -102,7 +102,7 @@ public class OtherGrowthConfig {
 		globalChunkScanRadius = globalConfig.getInt("chunk_scan_radius", 6);
 		
 		if (taskDelay < 5) taskDelay = 5; // a minimum for safety
-		Log.high("Loaded global config ("+global+"), keys found: "+globalConfig.getKeys(false).toString() + " (verbosity="+verbosity+")");
+		Log.high("Loaded global config ("+global+"), keys found: "+globalConfig.getKeys(false).toString() + " (verbosity="+Log.verbosity+")");
 
 	}
 
@@ -321,12 +321,5 @@ public class OtherGrowthConfig {
 		if(result.isEmpty()) return null;
 		return result;
 	}
-
-
-	public static Verbosity getVerbosity() {
-		return verbosity;
-	}
-
-
 }
 
