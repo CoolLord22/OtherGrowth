@@ -78,7 +78,7 @@ public class RangeData implements Data {
                 ((Sheep) mob).setSheared(true);
             val -= 32;
             if (val > 0)
-                ((Sheep) mob).setColor(DyeColor.getByData((byte) (val - 1)));
+                ((Sheep) mob).setColor(DyeColor.getByDyeData((byte) (val - 1)));
             break;
         case SLIME:
             if (val > 0)

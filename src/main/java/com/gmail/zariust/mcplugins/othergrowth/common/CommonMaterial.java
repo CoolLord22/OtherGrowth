@@ -103,6 +103,9 @@ public final class CommonMaterial {
         aMap.put("cookedpork", "grilledpork");
         aMap.put("cookedporkchop", "grilledpork");
         aMap.put("grilledporkchop", "grilledpork");
+        aMap.put("rabbit_meat", "rabbit");
+        aMap.put("raw_rabbit", "rabbit");
+
         aMap.put("goldpants", "goldleggings");
         aMap.put("goldvest", "goldchestplate");
         aMap.put("goldchest", "goldchestplate");
@@ -199,7 +202,23 @@ public final class CommonMaterial {
         aMap.put("warddisc", "record10");
         aMap.put("11disc", "record11");
         aMap.put("waitdisc", "record12");
+        
+        aMap.put("commandblock", "command");
 
+        // 1.6.1 mats
+        aMap.put("lead", "leash");
+        aMap.put("haybale", "hay_block");
+        aMap.put("ironhorsearmour", "ironbarding");
+        aMap.put("goldhorsearmour", "goldbarding");
+        aMap.put("diamondhorsearmour", "diamondbarding");
+        aMap.put("ironhorsearmor", "ironbarding");
+        aMap.put("goldhorsearmor", "goldbarding");
+        aMap.put("diamondhorsearmor", "diamondbarding");
+        aMap.put("blockofcoal", "coalblock");
+        aMap.put("hardenedclay", "hardclay");
+
+        aMap.put("leaves_1", "leaves");
+        
         ALIASES = Collections.unmodifiableMap(aMap);
     }
 
@@ -212,8 +231,6 @@ public final class CommonMaterial {
         // including the BLOCK makes it less confusing.)
 
         // remove any trailing data (eg. from tool [item]/[quantity])
-        if (mat == null) return null;
-        
         String[] split = mat.split("/");
         mat = split[0];
 
@@ -252,11 +269,11 @@ public final class CommonMaterial {
 
     // Colors
     public static int getWoolColor(DyeColor color) {
-        return color.getData();
+        return color.getWoolData();
     }
 
     public static int getDyeColor(DyeColor color) {
-        return 0xF - color.getData();
+        return 0xF - color.getDyeData();
     }
 
     @SuppressWarnings("incomplete-switch")
@@ -279,6 +296,22 @@ public final class CommonMaterial {
                 return (int) species.getData();
             break;
         case WOOL:
+        case STAINED_GLASS:
+        case STAINED_GLASS_PANE:
+        case STAINED_CLAY:
+            if (state.contains("!")) {
+                for (String statePart : state.split("!")) {
+                    try {
+                    if (DyeColor.valueOf(statePart) != null) {
+                        state = statePart;
+                    }
+                    } catch (Exception exception) {}
+                }
+            }
+            if (state.contains("!")) {
+                throw new IllegalArgumentException("Illegal block colour: "
+                        + state);
+            }
             DyeColor wool = DyeColor.valueOf(state);
             if (wool != null)
                 return getWoolColor(wool);
@@ -385,7 +418,10 @@ public final class CommonMaterial {
                                                                                 // decay
                                                                                 // flag
             case WOOL:
-                return DyeColor.getByData((byte) data).toString();
+            case STAINED_GLASS:
+            case STAINED_GLASS_PANE:
+            case STAINED_CLAY:
+            	return DyeColor.getByDyeData((byte) data).toString();
             case SMOOTH_BRICK:
                 switch (data) {
                 case 0:
@@ -440,9 +476,11 @@ public final class CommonMaterial {
 
     public static String substituteAlias(String drop) {
         Map<String, String> a2Map = new HashMap<String, String>();
-
+        a2Map.put("ANYSHOVEL", "ANY_SPADE");
+        a2Map.put("LAPISLAZULI", "DYE@BLUE");
+        
         a2Map.put("BONEMEAL", "DYE@WHITE");
-        a2Map.put("COCOA", "DYE@BROWN");
+        a2Map.put("COCOABEANS", "DYE@BROWN");
 
         a2Map.put("SKELETONHEAD", "SKULL_ITEM@0");
         a2Map.put("SKELETONSKULL", "SKULL_ITEM@0");

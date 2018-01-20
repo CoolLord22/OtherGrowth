@@ -2,14 +2,14 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.gmail.zariust.mcplugins.othergrowth</groupId>
     <artifactId>OtherGrowth</artifactId>
-    <version>0.4.0</version>
+    <version>0.5.0</version>
     <name>OtherGrowth</name>
     <url>http://www.website.here/</url>
     <repositories>
-        <repository>
-            <id>bukkit-repo</id>
-            <url>http://repo.bukkit.org/content/groups/public</url>
-        </repository>
+		<repository>
+          <id>spigot-repo</id>
+          <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+		</repository>
         <repository>
           <id>sk89q-repo</id>
           <url>http://maven.sk89q.com/repo/</url>
@@ -29,17 +29,17 @@
         </plugins>
     </build>
     <dependencies>
-        <dependency>
-            <groupId>org.bukkit</groupId>
-            <artifactId>bukkit</artifactId>
-            <version>1.5.1-R0.2-SNAPSHOT</version>
-            <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
+    <dependency>
+      <groupId>org.bukkit</groupId>
+      <artifactId>bukkit</artifactId>
+      <version>1.12.2-R0.1-SNAPSHOT</version>
+	  <type>jar</type>
+      <scope>compile</scope>
+    </dependency>
     <dependency>
       <groupId>com.sk89q</groupId>
       <artifactId>worldguard</artifactId>
-      <version>5.5.5-SNAPSHOT</version>
+      <version>6.1.1-SNAPSHOT</version>
       <scope>compile</scope>
     </dependency>
     </dependencies>
