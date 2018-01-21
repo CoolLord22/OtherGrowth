@@ -1,18 +1,18 @@
-author: Zarius
+author: Zarius (Updated by CoolLord22)
 database: false
-description: Description goes here.
+description: Plugin that allows world-terrain recipes.
 generator: http://dinnerbone.com/minecraft/tools/pluginator/
 main: com.gmail.zariust.mcplugins.othergrowth.OtherGrowth
 name: OtherGrowth
 startup: postworld
 url: http://www.website.here/
-version: '0.4.0'
+version: '1.0'
 commands:
     og:
         description: Administrate the OtherGrowth plugin
         aliases: [ogr]
         usage: |
-            OtherGrowth 0.4.0
+            OtherGrowth 1.0
 
             (/ogr) /og reload - reload config
 
