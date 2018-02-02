@@ -98,8 +98,8 @@ public class OtherGrowthConfig {
 		globalDisableMetrics = globalConfig.getBoolean("disable_metrics", false);
 		globalRunOnStartup = globalConfig.getBoolean("run_on_startup", true);
 		globalScanAsync = globalConfig.getBoolean("scan_asynchronously", true);
-		globalScanLoadedChunks = globalConfig.getBoolean("scan_all_loaded_chunks", true);
-		globalChunkScanRadius = globalConfig.getInt("chunk_scan_radius", 6);
+		globalScanLoadedChunks = globalConfig.getBoolean("scan_all_loaded_chunks", false);
+		globalChunkScanRadius = globalConfig.getInt("chunk_scan_radius", 3);
 		
 		if (taskDelay < 5) taskDelay = 5; // a minimum for safety
 		Log.high("Loaded global config ("+global+"), keys found: "+globalConfig.getKeys(false).toString() + " (verbosity="+Log.verbosity+")");
@@ -118,8 +118,8 @@ public class OtherGrowthConfig {
 			stream.println("run_on_startup: true");
 			stream.println("tick_delay_between_scans: 200");
 			stream.println("scan_asynchronously: true");
-			stream.println("scan_all_loaded_chunks: true  # ignores radius setting (if true)");
-			stream.println("chunk_scan_radius: 6");
+			stream.println("scan_all_loaded_chunks: false  # ignores radius setting (if true)");
+			stream.println("chunk_scan_radius: 3");
 			stream.println("");
 			stream.close();
 			//globalConfig.save(global);
